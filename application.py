@@ -1,14 +1,37 @@
-import flask
+from flask import Flask
+import socket
+# from flask.ext.cors import CORS
 
-application = flask.Flask(__name__)
 
-#Set application.debug=true to enable tracebacks on Beanstalk log output.
-#Make sure to remove this line before deploying to production.
-application.debug=True
+global token
 
-@application.route('/')
-def hello_world():
-    return "joe rox the world"
+def netcat(hostname, port, content):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((hostname, port))
+    s.sendall(content)
+    s.shutdown(socket.SHUT_WR)
+    global token
+    while 1:
+        data = s.recv(1024)
+        if data == "":
+            break
+        token = data
+        print "Received:", data
+
+    # print(token)
+    print "Connection closed."
+    s.close()
+    return token
+
+
+app = Flask(__name__)
+# cors = CORS(app)
+
+@app.route("/")
+def helloWorld():
+    return netcat("challenge2.airtime.com",2323,"")
+
+# print(zz)
 
 if __name__ == '__main__':
-    application.run(host='0.0.0.0')
+    app.run(host='0.0.0.0')
