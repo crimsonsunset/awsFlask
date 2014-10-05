@@ -1,7 +1,9 @@
 import flask
 import socket
+from flask.ext.cors import CORS
 
 application = flask.Flask(__name__)
+cors = CORS(app)
 
 #Set application.debug=true to enable tracebacks on Beanstalk log output.
 #Make sure to remove this line before deploying to production.
