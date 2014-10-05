@@ -29,9 +29,10 @@ app = Flask(__name__)
 
 @app.route("/")
 def helloWorld():
-    return netcat("challenge2.airtime.com",2323,"")
+    # return netcat("challenge2.airtime.com",2323,"")
+    return "sdsdzzz"
 
 # print(zz)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run()
