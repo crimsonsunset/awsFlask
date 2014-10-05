@@ -7,6 +7,27 @@ application = flask.Flask(__name__)
 #Make sure to remove this line before deploying to production.
 application.debug=True
 
+global token
+
+def netcat(hostname, port, content):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((hostname, port))
+    s.sendall(content)
+    s.shutdown(socket.SHUT_WR)
+    global token
+    while 1:
+        data = s.recv(1024)
+        if data == "":
+            break
+        token = data
+        print "Received:", data
+
+    # print(token)
+    print "Connection closed."
+    s.close()
+    return token
+
+
 @application.route('/')
 def hello_world():
     return "Hello world!"
