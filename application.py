@@ -31,9 +31,18 @@ def netcat(hostname, port, content):
 
 
 @application.route('/')
-def hello_world():
+def return_token():
     return netcat("challenge2.airtime.com",2323,"")
-    # return "asdzzz"
+
+@application.route('/token')
+def return_token():
+    return netcat("challenge2.airtime.com",2323,"")
+
+
+@application.route('/identify')
+def identify():
+    return netcat("challenge2.airtime.com",2323,"")
+
 
 if __name__ == '__main__':
     application.run(host='0.0.0.0')
