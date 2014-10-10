@@ -1,70 +1,81 @@
+#!/usr/bin/env python
+#title           :application.py
+#description     :A Flask server used to route HTTP requests to Airtime's Server
+#author = Joe Sangiorgio
+#status = Production
+#date            :10-7-14
+#version         :1.0
+#usage           :python application.py
+#=========================================================================
+
 import flask
 import socket
 import urllib
+import requests
+import json
 from flask.ext.cors import CORS
 from flask import request
+
+url = 'http://challenge2.airtime.com:7182'
+headers = {'X-Labyrinth-Email': 'jsangio1@gmail.com'}
 
 application = flask.Flask(__name__)
 cors = CORS(application)
 
 #Set application.debug=true to enable tracebacks on Beanstalk log output.
-#Make sure to remove this line before deploying to production.
 # application.debug=True
 
-global token
+#routes for URL endpoints
+START_ROUTE = "/start"
+EXITS_ROUTE = "/exits"
+MOVE_ROUTE = "/move"
+WALL_ROUTE = "/wall"
+REPORT_ROUTE = "/report"
 
-def netcat(hostname, port, content):
-    print("netcatting -- " + content)
-    content = urllib.quote(content.encode('utf-8'))
-    print("netcattingsss -- " + content)
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((hostname, port))
-    s.sendall(content)
-    s.shutdown(socket.SHUT_WR)
-    global token
-    while 1:
-        data = s.recv(1024)
-        if data == "":
-            # sendMe = "IAM:"+token+":"+"gg@aol.com"+":at\n"
-            # sendMe = urllib.quote(sendMe.encode('utf-8'))
-            # print (sendMe)
-            # s.sendall(sendMe)
-            break
-        token = data
-        # print "Received:", data
+#Get id for first room
+@application.route(START_ROUTE)
+def start():
+    r = requests.get(url+START_ROUTE,headers=headers)
+    return(r.text)
 
-    # print(token)
-    print "Connection closed."
+#Get exit information about current room
+@application.route(EXITS_ROUTE)
+def exits():
+    roomId = request.args['roomId']
+    r = requests.get(url+EXITS_ROUTE+"?roomId="+roomId,headers=headers)
+    return(r.text)
 
 
-    s.close()
-    return token
+#Get info about new room in specified direction
+@application.route(MOVE_ROUTE)
+def move():
+    roomId = request.args['roomId']
+    exit = request.args['exit']
+    r = requests.get(url+MOVE_ROUTE+"?roomId="+roomId+"&exit="+exit,headers=headers)
+    return(r.text)
 
 
-@application.route('/')
-def home():
-    # print (str(netcat("challenge2.airtime.com",2323,"")).encode('utf-8','strict'))
-    str = "this is string example..@@@..wow!!!";
-    str = str.encode('utf8','strict');
-
-    print "Encoded String: " + str;
-    print "Decoded String: " + str.decode('utf-8','strict')
-    return "home"
-
-@application.route('/token')
-def return_token():
-    return netcat("challenge2.airtime.com",2323,"")
+#Get wall info properties
+@application.route(WALL_ROUTE)
+def wall():
+    roomId = request.args['roomId']
+    r = requests.get(url+WALL_ROUTE+"?roomId="+roomId,headers=headers)
+    return(r.text)
 
 
-@application.route('/login')
-def identify():
-    print(request.args['email'])
-    email = request.args['email']
-    token = request.args['token']
-    print("after login gives me -- " +netcat("challenge2.airtime.com",2323,"IAM:"+token+":"+email+":at\n"))
-    return "zzz"
+#Route report JSON to POST endpoint
+@application.route(REPORT_ROUTE, methods=["POST"])
+def report():
+    print(request.form.getlist('roomIds[]'))
+    payload = {
+        "roomIds": request.form.getlist('roomIds[]'),
+        "challenge": request.form.get('challenge')
+    }
+    print(payload)
+    r = requests.post(url+REPORT_ROUTE,data=json.dumps(payload),headers=headers)
+    print(r.text)
+    return("r.text")
 
-
+#start application
 if __name__ == '__main__':
     application.run(host='0.0.0.0')
-
