@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #title           :application.py
 #description     :A Flask server used to route HTTP requests to Airtime's Server
-#author = Joe Sangiorgio
-#status = Production
+#author          :Joe Sangiorgio
+#status          :Production
 #date            :10-7-14
 #version         :1.0
 #usage           :python application.py
@@ -66,15 +66,12 @@ def wall():
 #Route report JSON to POST endpoint
 @application.route(REPORT_ROUTE, methods=["POST"])
 def report():
-    print(request.form.getlist('roomIds[]'))
     payload = {
         "roomIds": request.form.getlist('roomIds[]'),
         "challenge": request.form.get('challenge')
     }
-    print(payload)
     r = requests.post(url+REPORT_ROUTE,data=json.dumps(payload),headers=headers)
-    print(r.text)
-    return("r.text")
+    return(r.text)
 
 #start application
 if __name__ == '__main__':
